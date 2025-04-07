@@ -1,9 +1,9 @@
 import streamlit as st
 
-st.title("Interpretazione risultati PCR - HPV / MST")
+st.title("Interpretazione risultati PCR - HPV / MST / HBV")
 
 # Selezione del kit diagnostico
-kit = st.radio("Seleziona il kit diagnostico:", ["HPV-geneprof", "MSTriplex-ABAnalitica"], index=None)
+kit = st.radio("Seleziona il kit diagnostico:", ["HPV-geneprof", "MSTriplex-ABAnalitica", "HBV-geneprof"], index=None)
 
 # Dizionari di transcodifica dei canali per ciascun kit
 color_to_channel_hpv = {
@@ -21,6 +21,11 @@ color_to_channel_mst = {
     "ORANGE": "BG"
 }
 
+color_to_channel_hbv = {
+    "GREEN": "FAM",
+    "YELLOW": "HEX"
+}
+
 # Associazione kit → dizionario colori e lista colori validi
 kit_color_map = {
     "HPV-geneprof": {
@@ -30,6 +35,10 @@ kit_color_map = {
     "MSTriplex-ABAnalitica": {
         "mapping": color_to_channel_mst,
         "colori": list(color_to_channel_mst.keys())
+    },
+    "HBV-geneprof": {
+        "mapping": color_to_channel_hbv,
+        "colori": list(color_to_channel_hbv.keys())
     }
 }
 
@@ -99,6 +108,27 @@ if kit:
                     esiti.append("❌ Mycoplasma genitalium (MG): non rilevato")
 
                 risultato = "\n".join(esiti)
+
+        elif kit == "HBV-geneprof":
+            canali = [mapping[c] for c in selezionati if c in mapping]
+            fam = "FAM" in canali
+            hex_ = "HEX" in canali
+
+            if not fam and not hex_:
+                risultato = "❌ Test invalido (controllo interno assente)"
+            elif fam and hex_:
+                risultato = "✅ Test valido - HBV positivo"
+                st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
+                sc = st.number_input("SC (concentrazione del campione in UI/µl)", min_value=0.0, format="%.2f")
+                ev = st.number_input("EV (volume di eluizione in µl)", min_value=0.0, format="%.2f")
+                iv = st.number_input("IV (volume di isolamento in ml)", min_value=0.0, format="%.2f")
+                if sc > 0 and ev > 0 and iv > 0:
+                    concentrazione = (sc * ev) / iv
+                    st.success(f"Concentrazione campione: {concentrazione:.2f} UI/ml")
+            elif not fam and hex_:
+                risultato = "✅ Test valido - HBV non rilevato"
+            else:
+                risultato = "⚠️ Caso non previsto - controlla i canali inseriti"
 
         st.markdown("### Risultato")
         st.info(risultato)
