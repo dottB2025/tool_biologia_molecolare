@@ -9,7 +9,8 @@ kit = st.radio("Seleziona il kit diagnostico:", [
     "MSTriplex-ABAnalitica",
     "HBV-geneprof",
     "HCV-geneprof",
-    "MTHFR-C677T"
+    "MTHFR-C677T",
+    "MTHFR-A1298C"
 ], index=None)
 
 # Mapping esplicito per ciascun kit (colori → sonde)
@@ -44,6 +45,12 @@ kit_color_map = {
         }
     },
     "MTHFR-C677T": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX"
+        }
+    },
+    "MTHFR-A1298C": {
         "mapping": {
             "GREEN": "FAM",
             "YELLOW": "HEX"
@@ -150,23 +157,23 @@ if kit:
             else:
                 risultato = f"✅ Test valido - {kit[:3]} non rilevato"
 
-        elif kit == "MTHFR-C677T":
+        elif kit in ["MTHFR-C677T", "MTHFR-A1298C"]:
             canali = [mapping[c] for c in selezionati if c in mapping]
             fam = "FAM" in canali
             hex_ = "HEX" in canali
 
             if fam and not hex_:
-                risultato = "<span style='color:green'>✅ Omozigote wild-type (C/C)</span>"
+                risultato = "🟩 Omozigote wild-type (C/C)"
             elif fam and hex_:
-                risultato = "<span style='color:orange'>✅ Eterozigote (C/T)</span>"
+                risultato = "🟧 Eterozigote (C/T)"
             elif not fam and hex_:
-                risultato = "<span style='color:red'>✅ Omozigote mutato (T/T)</span>"
+                risultato = "🟥 Omozigote mutato (T/T)"
             else:
                 risultato = "❌ Test invalido (nessun segnale rilevato)"
 
         st.session_state.result_text = risultato
-        st.markdown("### Risultato", unsafe_allow_html=True)
-        st.markdown(risultato, unsafe_allow_html=True)
+        st.markdown("### Risultato")
+        st.markdown(risultato)
 
     if st.session_state.show_quant:
         st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
