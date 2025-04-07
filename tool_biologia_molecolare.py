@@ -1,37 +1,7 @@
 import streamlit as st
-import pandas as pd
-import os
 
 st.set_page_config(page_title="dr. Buonsanti - Tool Biologia Molecolare")
 st.title("dr. Buonsanti - tool interpretativo test biologia molecolare")
-
-# Database path
-DB_PATH = "storico_risultati.csv"
-
-# Carica database se esiste
-if os.path.exists(DB_PATH):
-    db = pd.read_csv(DB_PATH)
-else:
-    db = pd.DataFrame(columns=["codice_paziente", "kit", "colori", "risultato", "concentrazione"])
-
-# Campo per il codice paziente
-codice_paziente = st.text_input("Inserisci il codice del paziente:")
-
-# Pulsante sempre visibile per cercare nello storico
-if st.button("Cerca nello storico"):
-    if codice_paziente:
-        if codice_paziente in db["codice_paziente"].values:
-            st.subheader("🗂️ Elaborazione precedente trovata")
-            match = db[db["codice_paziente"] == codice_paziente].iloc[-1]
-            st.write(f"**Kit:** {match['kit']}")
-            st.write(f"**Colori rilevati:** {match['colori']}")
-            st.write(f"**Risultato:** {match['risultato']}")
-            if pd.notna(match['concentrazione']):
-                st.write(f"**Concentrazione:** {int(match['concentrazione']):,} UI/ml".replace(",", "."))
-        else:
-            st.info("Nessun risultato trovato per questo codice.")
-    else:
-        st.warning("Inserisci un codice paziente prima di cercare nello storico.")
 
 # Selezione del kit diagnostico
 kit = st.radio("Seleziona il kit diagnostico:", ["HPV-geneprof", "MSTriplex-ABAnalitica", "HBV-geneprof", "HCV-geneprof"], index=None)
@@ -74,7 +44,7 @@ if kit:
     mapping = kit_color_map[kit]["mapping"]
     selezionati = st.multiselect("Seleziona i colori rilevati (puoi selezionarne più di uno):", colori_validi)
 
-    if st.button("Interpreta risultato") and codice_paziente:
+    if st.button("Interpreta risultato"):
         risultato = ""
         st.session_state.show_quant = False
 
@@ -143,16 +113,3 @@ if kit:
             if calcola and sc > 0 and ev > 0 and iv > 0:
                 concentrazione = round((sc * ev) / iv)
                 st.success(f"Concentrazione campione: {concentrazione:,.0f} UI/ml".replace(",", "."))
-
-    if st.session_state.result_text and codice_paziente:
-        if st.button("Salva risultato nel database"):
-            nuova_riga = {
-                "codice_paziente": codice_paziente,
-                "kit": kit,
-                "colori": ", ".join(selezionati),
-                "risultato": st.session_state.result_text,
-                "concentrazione": concentrazione if concentrazione else None
-            }
-            db = pd.concat([db, pd.DataFrame([nuova_riga])], ignore_index=True)
-            db.to_csv(DB_PATH, index=False)
-            st.success("Risultato salvato correttamente nel database!")
