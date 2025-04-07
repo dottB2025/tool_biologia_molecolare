@@ -42,6 +42,10 @@ kit_color_map = {
     }
 }
 
+# Inizializza variabili per SC, EV, IV
+sc = ev = iv = None
+calcola_concentrazione = False
+
 if kit:
     colori_validi = kit_color_map[kit]["colori"]
     mapping = kit_color_map[kit]["mapping"]
@@ -118,13 +122,7 @@ if kit:
                 risultato = "❌ Test invalido (controllo interno assente)"
             elif fam and hex_:
                 risultato = "✅ Test valido - HBV positivo"
-                st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
-                sc = st.number_input("SC (concentrazione del campione in UI/µl)", min_value=0.0, format="%.2f")
-                ev = st.number_input("EV (volume di eluizione in µl)", min_value=0.0, format="%.2f")
-                iv = st.number_input("IV (volume di isolamento in ml)", min_value=0.0, format="%.2f")
-                if sc > 0 and ev > 0 and iv > 0:
-                    concentrazione = (sc * ev) / iv
-                    st.success(f"Concentrazione campione: {concentrazione:.2f} UI/ml")
+                calcola_concentrazione = True
             elif not fam and hex_:
                 risultato = "✅ Test valido - HBV non rilevato"
             else:
@@ -132,3 +130,15 @@ if kit:
 
         st.markdown("### Risultato")
         st.info(risultato)
+
+if calcola_concentrazione:
+    st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
+    with st.form("quantificazione"):
+        sc = st.number_input("SC (concentrazione del campione in UI/µl)", min_value=0.0, format="%.2f")
+        ev = st.number_input("EV (volume di eluizione in µl)", min_value=0.0, format="%.2f")
+        iv = st.number_input("IV (volume di isolamento in ml)", min_value=0.0, format="%.2f")
+        calcola = st.form_submit_button("Calcola concentrazione")
+
+    if calcola and sc > 0 and ev > 0 and iv > 0:
+        concentrazione = (sc * ev) / iv
+        st.success(f"Concentrazione campione: {concentrazione:.2f} UI/ml")
