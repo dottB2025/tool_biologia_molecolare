@@ -5,7 +5,7 @@ st.title("Interpretazione risultati PCR - HPV / MST")
 # Selezione del kit diagnostico
 kit = st.radio("Seleziona il kit diagnostico:", ["HPV-geneprof", "MSTriplex-ABAnalitica"], index=None)
 
-# Dizionari di transcodifica dei canali
+# Dizionari di transcodifica dei canali per ciascun kit
 color_to_channel_hpv = {
     "GREEN": "FAM",
     "YELLOW": "HEX",
@@ -21,17 +21,29 @@ color_to_channel_mst = {
     "ORANGE": "BG"
 }
 
-# Colori selezionabili
-colori = ["GREEN", "YELLOW", "ORANGE", "RED", "CRIMSON"]
+# Associazione kit → dizionario colori e lista colori validi
+kit_color_map = {
+    "HPV-geneprof": {
+        "mapping": color_to_channel_hpv,
+        "colori": list(color_to_channel_hpv.keys())
+    },
+    "MSTriplex-ABAnalitica": {
+        "mapping": color_to_channel_mst,
+        "colori": list(color_to_channel_mst.keys())
+    }
+}
 
 if kit:
-    selezionati = st.multiselect("Seleziona i colori rilevati (puoi selezionarne più di uno):", colori)
+    colori_validi = kit_color_map[kit]["colori"]
+    mapping = kit_color_map[kit]["mapping"]
+
+    selezionati = st.multiselect("Seleziona i colori rilevati (puoi selezionarne più di uno):", colori_validi)
 
     if st.button("Interpreta risultato"):
         risultato = ""
 
         if kit == "HPV-geneprof":
-            canali = [color_to_channel_hpv[c] for c in selezionati]
+            canali = [mapping[c] for c in selezionati]
             fam = "FAM" in canali
             hex_ = "HEX" in canali
             cy5 = "Cy5" in canali
@@ -64,7 +76,7 @@ if kit:
                 risultato = "⚠️ Caso non previsto - controlla i canali inseriti"
 
         elif kit == "MSTriplex-ABAnalitica":
-            canali = [color_to_channel_mst[c] for c in selezionati]
+            canali = [mapping[c] for c in selezionati if c in mapping]
             bg = "BG" in canali
 
             if not bg:
