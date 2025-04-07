@@ -87,6 +87,10 @@ if kit == "BV-NLM":
         if presenza_atopobium:
             presenza_text.append("✅ Presenza di Atopobium")
 
+        # Sostituisci 0.00 con 1 per evitare errore log
+        atopobium = 1 if atopobium == 0 else atopobium
+        gardnerella = 1 if gardnerella == 0 else gardnerella
+
         kc1 = kc2 = kc3 = None
         vaginosi = ""
         flora_perc = ""
