@@ -9,7 +9,7 @@ kit = st.radio("Seleziona il kit diagnostico:", [
     "MSTriplex-ABAnalitica",
     "HBV-geneprof",
     "HCV-geneprof",
-    "MTHFR-C677T-Geneprof"
+    "MTHFR-C677T"
 ], index=None)
 
 # Mapping esplicito per ciascun kit (colori → sonde)
@@ -43,12 +43,39 @@ kit_color_map = {
             "YELLOW": "HEX"
         }
     },
-    "MTHFR-C677T-Geneprof": {
+    "MTHFR-C677T": {
         "mapping": {
             "GREEN": "FAM",
             "YELLOW": "HEX"
         }
     }
+}
+
+# Transcodifica universale: sonda → colore
+universal_probe_to_color = {
+    "FAM": "GREEN",
+    "SYBR Green I": "GREEN",
+    "Fluorescein": "GREEN",
+    "EvaGreen": "GREEN",
+    "Alexa Fluor 488": "GREEN",
+    "JOE": "YELLOW",
+    "VIC": "YELLOW",
+    "HEX": "YELLOW",
+    "TET": "YELLOW",
+    "CAL Fluor Gold 540": "YELLOW",
+    "Yakima Yellow": "YELLOW",
+    "ROX": "ORANGE",
+    "CAL Fluor Red 610": "ORANGE",
+    "Cy3.5": "ORANGE",
+    "Texas Red": "ORANGE",
+    "Alexa Fluor 568": "ORANGE",
+    "Cy5": "RED",
+    "Quasar 670": "RED",
+    "LightCycler Red640": "RED",
+    "Alexa Fluor 633": "RED",
+    "Quasar 705": "CRIMSON",
+    "LightCycler Red705": "CRIMSON",
+    "Alexa Fluor 680": "CRIMSON"
 }
 
 # Aggiungi lista dei colori per ciascun kit
@@ -123,21 +150,23 @@ if kit:
             else:
                 risultato = f"✅ Test valido - {kit[:3]} non rilevato"
 
-        elif kit == "MTHFR-C677T-Geneprof":
+        elif kit == "MTHFR-C677T":
             canali = [mapping[c] for c in selezionati if c in mapping]
-            fam, hex_ = "FAM" in canali, "HEX" in canali
+            fam = "FAM" in canali
+            hex_ = "HEX" in canali
+
             if fam and not hex_:
-                risultato = "✅ Mutazione C677T assente (omozigote wild type - C/C)"
-            elif not fam and hex_:
-                risultato = "✅ Mutazione C677T presente in omozigosi (T/T)"
+                risultato = "<span style='color:green'>✅ Omozigote wild-type (C/C)</span>"
             elif fam and hex_:
-                risultato = "✅ Mutazione C677T presente in eterozigosi (C/T)"
+                risultato = "<span style='color:orange'>✅ Eterozigote (C/T)</span>"
+            elif not fam and hex_:
+                risultato = "<span style='color:red'>✅ Omozigote mutato (T/T)</span>"
             else:
                 risultato = "❌ Test invalido (nessun segnale rilevato)"
 
         st.session_state.result_text = risultato
-        st.markdown("### Risultato")
-        st.info(risultato)
+        st.markdown("### Risultato", unsafe_allow_html=True)
+        st.markdown(risultato, unsafe_allow_html=True)
 
     if st.session_state.show_quant:
         st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
