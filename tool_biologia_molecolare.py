@@ -1,4 +1,5 @@
 import streamlit as st
+import math
 
 st.set_page_config(page_title="dr. Buonsanti - Tool Biologia Molecolare")
 st.title("dr. Buonsanti - tool interpretativo test biologia molecolare")
@@ -10,7 +11,8 @@ kit = st.radio("Seleziona il kit diagnostico:", [
     "HBV-geneprof",
     "HCV-geneprof",
     "MTHFR-C677T",
-    "MTHFR-A1298C"
+    "MTHFR-A1298C",
+    "BV-NLM"
 ], index=None)
 
 # Mapping esplicito per ciascun kit (colori → sonde)
@@ -55,62 +57,86 @@ kit_color_map = {
             "GREEN": "FAM",
             "YELLOW": "HEX"
         }
+    },
+    "BV-NLM": {
+        "mapping": {}
     }
-}
-
-# Transcodifica universale: sonda → colore
-universal_probe_to_color = {
-    "FAM": "GREEN",
-    "SYBR Green I": "GREEN",
-    "Fluorescein": "GREEN",
-    "EvaGreen": "GREEN",
-    "Alexa Fluor 488": "GREEN",
-    "JOE": "YELLOW",
-    "VIC": "YELLOW",
-    "HEX": "YELLOW",
-    "TET": "YELLOW",
-    "CAL Fluor Gold 540": "YELLOW",
-    "Yakima Yellow": "YELLOW",
-    "ROX": "ORANGE",
-    "CAL Fluor Red 610": "ORANGE",
-    "Cy3.5": "ORANGE",
-    "Texas Red": "ORANGE",
-    "Alexa Fluor 568": "ORANGE",
-    "Cy5": "RED",
-    "Quasar 670": "RED",
-    "LightCycler Red640": "RED",
-    "Alexa Fluor 633": "RED",
-    "Quasar 705": "CRIMSON",
-    "LightCycler Red705": "CRIMSON",
-    "Alexa Fluor 680": "CRIMSON"
 }
 
 # Aggiungi lista dei colori per ciascun kit
 for k in kit_color_map:
     kit_color_map[k]["colori"] = list(kit_color_map[k]["mapping"].keys())
 
-# Stati per la sessione
-if "show_quant" not in st.session_state:
-    st.session_state.show_quant = False
-if "result_text" not in st.session_state:
-    st.session_state.result_text = ""
+if kit == "BV-NLM":
+    st.markdown("### Inserisci le copie/ml")
+    batteri_totali = st.number_input("Batteri totali (canale RED)", min_value=0.0)
+    lattobacilli = st.number_input("Lattobacilli (canale ORANGE)", min_value=0.0)
+    atopobium = st.number_input("Atopobium vaginae (canale YELLOW)", min_value=0.0)
+    gardnerella = st.number_input("Gardnerella vaginalis (canale GREEN)", min_value=0.0)
 
-concentrazione = None
+    st.markdown("### Inserisci i valori di CT")
+    ct_red = st.number_input("CT Batteri totali (RED)", min_value=0.0)
+    ct_orange = st.number_input("CT Lattobacilli (ORANGE)", min_value=0.0)
+    ct_yellow = st.number_input("CT Atopobium (YELLOW)", min_value=0.0)
+    ct_green = st.number_input("CT Gardnerella (GREEN)", min_value=0.0)
 
-if kit:
+    if st.button("Interpreta risultato"):
+        presenza_gardnerella = ct_green < 35
+        presenza_atopobium = ct_yellow < 35
+
+        presenza_text = []
+        if presenza_gardnerella:
+            presenza_text.append("✅ Presenza di Gardnerella")
+        if presenza_atopobium:
+            presenza_text.append("✅ Presenza di Atopobium")
+
+        kc1 = kc2 = kc3 = None
+        vaginosi = ""
+        flora_perc = ""
+
+        if batteri_totali < 1e5:
+            vaginosi = "❌ Carica batterica insufficiente per l'analisi"
+        else:
+            try:
+                gvav = gardnerella + atopobium
+                kc1 = math.log10(lattobacilli) - math.log10(gvav)
+                kc2 = math.log10(batteri_totali) - math.log10(lattobacilli)
+                kc3 = math.log10(batteri_totali) - math.log10(gvav)
+
+                if kc2 > 1 and kc3 > 2:
+                    vaginosi = "⚠️ Alterazioni della flora di eziologia ignota"
+                elif kc1 < 0.5:
+                    vaginosi = "🟥 Presenza di vaginosi batterica"
+                elif kc1 > 1:
+                    vaginosi = "🟩 Assenza di vaginosi batterica"
+                else:
+                    vaginosi = "🟧 Flora vaginale intermedia"
+            except:
+                vaginosi = "⚠️ Errore nel calcolo dei logaritmi"
+
+        if lattobacilli > batteri_totali:
+            flora_perc = "% lattobacillare non calcolabile"
+        elif batteri_totali > 0:
+            perc = round((lattobacilli / batteri_totali) * 100)
+            flora_perc = f"% lattobacillare: {perc}%"
+
+        st.markdown("### Risultato")
+        if presenza_text:
+            st.markdown("\n".join(presenza_text))
+        st.markdown(vaginosi)
+        st.markdown(flora_perc)
+
+else:
     colori_validi = kit_color_map[kit]["colori"]
     mapping = kit_color_map[kit]["mapping"]
     selezionati = st.multiselect("Seleziona i colori rilevati (puoi selezionarne più di uno):", colori_validi)
 
     if st.button("Interpreta risultato"):
         risultato = ""
-        st.session_state.show_quant = False
-
         if kit == "HPV-geneprof":
             canali = [mapping[c] for c in selezionati]
             fam, hex_ = "FAM" in canali, "HEX" in canali
             cy5, texred, quasar = "Cy5" in canali, "ROX" in canali, "Quasar 705" in canali
-
             if not hex_:
                 risultato = "❌ Test invalido (controllo interno assente)"
             elif not fam:
@@ -133,7 +159,6 @@ if kit:
                 risultato = "✅ Positivo per HPV 16, 18 e 45"
             else:
                 risultato = "⚠️ Caso non previsto"
-
         elif kit == "MSTriplex-ABAnalitica":
             canali = [mapping[c] for c in selezionati if c in mapping]
             bg = "ROX" in canali
@@ -144,11 +169,9 @@ if kit:
                     f"✅ {label}: positivo" if probe in canali else f"❌ {label}: non rilevato"
                     for probe, label in zip(["FAM", "HEX", "Cy5"], ["Chlamydia trachomatis (CT)", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"])
                 ])
-
         elif kit in ["HBV-geneprof", "HCV-geneprof"]:
             canali = [mapping[c] for c in selezionati if c in mapping]
             fam, hex_ = "FAM" in canali, "HEX" in canali
-
             if not fam and not hex_:
                 risultato = "❌ Test invalido (controllo interno assente)"
             elif fam:
@@ -156,12 +179,10 @@ if kit:
                 st.session_state.show_quant = True
             else:
                 risultato = f"✅ Test valido - {kit[:3]} non rilevato"
-
         elif kit in ["MTHFR-C677T", "MTHFR-A1298C"]:
             canali = [mapping[c] for c in selezionati if c in mapping]
             fam = "FAM" in canali
             hex_ = "HEX" in canali
-
             if fam and not hex_:
                 risultato = "🟩 Omozigote wild-type (C/C)"
             elif fam and hex_:
@@ -170,12 +191,10 @@ if kit:
                 risultato = "🟥 Omozigote mutato (T/T)"
             else:
                 risultato = "❌ Test invalido (nessun segnale rilevato)"
-
-        st.session_state.result_text = risultato
         st.markdown("### Risultato")
         st.markdown(risultato)
 
-    if st.session_state.show_quant:
+    if st.session_state.get("show_quant"):
         st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
         with st.form("quantificazione"):
             sc = st.number_input("SC (concentrazione del campione in UI/µl)", min_value=0.0, format="%.2f")
