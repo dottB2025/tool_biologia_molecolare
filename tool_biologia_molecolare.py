@@ -12,32 +12,48 @@ kit = st.radio("Seleziona il kit diagnostico:", [
     "MTHFR-C677T-Geneprof"
 ], index=None)
 
-# Transcodifica universale canale → colore
-universal_channel_color = {
-    "FAM": "GREEN",
-    "HEX": "YELLOW",
-    "ROX": "ORANGE",
-    "Cy5": "RED",
-    "Quasar 705": "CRIMSON"
+# Mapping esplicito per ciascun kit (colori → sonde)
+kit_color_map = {
+    "HPV-geneprof": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX",
+            "ORANGE": "ROX",
+            "RED": "Cy5",
+            "CRIMSON": "Quasar 705"
+        }
+    },
+    "MSTriplex-ABAnalitica": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX",
+            "RED": "Cy5",
+            "ORANGE": "ROX"
+        }
+    },
+    "HBV-geneprof": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX"
+        }
+    },
+    "HCV-geneprof": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX"
+        }
+    },
+    "MTHFR-C677T-Geneprof": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX"
+        }
+    }
 }
 
-# Mapping kit → canali da usare
-kit_sonde = {
-    "HPV-geneprof": ["FAM", "HEX", "ROX", "Cy5", "Quasar 705"],
-    "MSTriplex-ABAnalitica": ["FAM", "HEX", "Cy5", "ROX"],
-    "HBV-geneprof": ["FAM", "HEX"],
-    "HCV-geneprof": ["FAM", "HEX"],
-    "MTHFR-C677T-Geneprof": ["FAM", "HEX"]
-}
-
-kit_color_map = {}
-for nome_kit, sonde in kit_sonde.items():
-    mapping = {}
-    for sonda in sonde:
-        colore = universal_channel_color.get(sonda)
-        if colore:
-            mapping[colore] = sonda
-    kit_color_map[nome_kit] = {"mapping": mapping, "colori": list(mapping.keys())}
+# Aggiungi lista dei colori per ciascun kit
+for k in kit_color_map:
+    kit_color_map[k]["colori"] = list(kit_color_map[k]["mapping"].keys())
 
 # Stati per la sessione
 if "show_quant" not in st.session_state:
