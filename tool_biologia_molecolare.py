@@ -15,31 +15,13 @@ kit = st.radio("Seleziona il kit diagnostico:", [
 # Transcodifica universale canale → colore
 universal_channel_color = {
     "FAM": "GREEN",
-    "SYBR Green I": "GREEN",
-    "Fluorescein": "GREEN",
-    "EvaGreen": "GREEN",
-    "Alexa Fluor 488": "GREEN",
-    "JOE": "YELLOW",
-    "VIC": "YELLOW",
     "HEX": "YELLOW",
-    "TET": "YELLOW",
-    "CAL Fluor Gold 540": "YELLOW",
-    "Yakima Yellow": "YELLOW",
     "ROX": "ORANGE",
-    "CAL Fluor Red 610": "ORANGE",
-    "Cy3.5": "ORANGE",
-    "Texas Red": "ORANGE",
-    "Alexa Fluor 568": "ORANGE",
     "Cy5": "RED",
-    "Quasar 670": "RED",
-    "LightCycler Red640": "RED",
-    "Alexa Fluor 633": "RED",
-    "Quasar 705": "CRIMSON",
-    "LightCycler Red705": "CRIMSON",
-    "Alexa Fluor 680": "CRIMSON"
+    "Quasar 705": "CRIMSON"
 }
 
-# Mapping kit → sonde → canali → colori
+# Mapping kit → canali da usare
 kit_sonde = {
     "HPV-geneprof": ["FAM", "HEX", "ROX", "Cy5", "Quasar 705"],
     "MSTriplex-ABAnalitica": ["FAM", "HEX", "Cy5", "ROX"],
