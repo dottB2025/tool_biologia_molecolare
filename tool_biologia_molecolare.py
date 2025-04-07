@@ -147,7 +147,7 @@ if st.session_state.show_hbv_quant:
 
         if calcola:
             if sc > 0 and ev > 0 and iv > 0:
-                concentrazione = (sc * ev) / iv
-                st.success(f"Concentrazione campione: {concentrazione:.2f} UI/ml")
+                concentrazione = round((sc * ev) / iv)
+                st.success(f"Concentrazione campione: {concentrazione:,} UI/ml".replace(",", "."))
             else:
                 st.warning("Inserire tutti i valori per calcolare la concentrazione.")
