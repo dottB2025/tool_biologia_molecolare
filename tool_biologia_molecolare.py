@@ -57,9 +57,6 @@ kit_color_map = {
             "GREEN": "FAM",
             "YELLOW": "HEX"
         }
-    },
-    "BV-NLM": {
-        "mapping": {}
     }
 }
 
@@ -126,7 +123,7 @@ if kit == "BV-NLM":
         st.markdown(vaginosi)
         st.markdown(flora_perc)
 
-else:
+elif kit in kit_color_map:
     colori_validi = kit_color_map[kit]["colori"]
     mapping = kit_color_map[kit]["mapping"]
     selezionati = st.multiselect("Seleziona i colori rilevati (puoi selezionarne più di uno):", colori_validi)
