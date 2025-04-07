@@ -12,32 +12,50 @@ kit = st.radio("Seleziona il kit diagnostico:", [
     "MTHFR-C677T-Geneprof"
 ], index=None)
 
-# Dizionari di transcodifica dei canali per ciascun kit
-color_to_channel_hpv = {
-    "GREEN": "FAM",
-    "YELLOW": "HEX",
-    "ORANGE": "TexRed/ROX",
-    "RED": "Cy5",
-    "CRIMSON": "Cy5.5/Quasar 705"
+# Transcodifica universale canale → colore
+universal_channel_color = {
+    "FAM": "GREEN",
+    "SYBR Green I": "GREEN",
+    "Fluorescein": "GREEN",
+    "EvaGreen": "GREEN",
+    "Alexa Fluor 488": "GREEN",
+    "JOE": "YELLOW",
+    "VIC": "YELLOW",
+    "HEX": "YELLOW",
+    "TET": "YELLOW",
+    "CAL Fluor Gold 540": "YELLOW",
+    "Yakima Yellow": "YELLOW",
+    "ROX": "ORANGE",
+    "CAL Fluor Red 610": "ORANGE",
+    "Cy3.5": "ORANGE",
+    "Texas Red": "ORANGE",
+    "Alexa Fluor 568": "ORANGE",
+    "Cy5": "RED",
+    "Quasar 670": "RED",
+    "LightCycler Red640": "RED",
+    "Alexa Fluor 633": "RED",
+    "Quasar 705": "CRIMSON",
+    "LightCycler Red705": "CRIMSON",
+    "Alexa Fluor 680": "CRIMSON"
 }
-color_to_channel_mst = {
-    "GREEN": "CT",
-    "YELLOW": "NG",
-    "RED": "MG",
-    "ORANGE": "BG"
-}
-color_to_channel_hbv = {"GREEN": "FAM", "YELLOW": "HEX"}
-color_to_channel_hcv = {"GREEN": "FAM", "YELLOW": "HEX"}
-color_to_channel_mthfr = {"GREEN": "FAM", "YELLOW": "HEX"}
 
-# Associazione kit → dizionario colori e lista colori validi
-kit_color_map = {
-    "HPV-geneprof": {"mapping": color_to_channel_hpv, "colori": list(color_to_channel_hpv.keys())},
-    "MSTriplex-ABAnalitica": {"mapping": color_to_channel_mst, "colori": list(color_to_channel_mst.keys())},
-    "HBV-geneprof": {"mapping": color_to_channel_hbv, "colori": list(color_to_channel_hbv.keys())},
-    "HCV-geneprof": {"mapping": color_to_channel_hcv, "colori": list(color_to_channel_hcv.keys())},
-    "MTHFR-C677T-Geneprof": {"mapping": color_to_channel_mthfr, "colori": list(color_to_channel_mthfr.keys())}
+# Mapping kit → sonde → canali → colori
+kit_sonde = {
+    "HPV-geneprof": ["FAM", "HEX", "ROX", "Cy5", "Quasar 705"],
+    "MSTriplex-ABAnalitica": ["FAM", "HEX", "Cy5", "ROX"],
+    "HBV-geneprof": ["FAM", "HEX"],
+    "HCV-geneprof": ["FAM", "HEX"],
+    "MTHFR-C677T-Geneprof": ["FAM", "HEX"]
 }
+
+kit_color_map = {}
+for nome_kit, sonde in kit_sonde.items():
+    mapping = {}
+    for sonda in sonde:
+        colore = universal_channel_color.get(sonda)
+        if colore:
+            mapping[colore] = sonda
+    kit_color_map[nome_kit] = {"mapping": mapping, "colori": list(mapping.keys())}
 
 # Stati per la sessione
 if "show_quant" not in st.session_state:
@@ -59,7 +77,7 @@ if kit:
         if kit == "HPV-geneprof":
             canali = [mapping[c] for c in selezionati]
             fam, hex_ = "FAM" in canali, "HEX" in canali
-            cy5, texred, quasar = "Cy5" in canali, "TexRed/ROX" in canali, "Cy5.5/Quasar 705" in canali
+            cy5, texred, quasar = "Cy5" in canali, "ROX" in canali, "Quasar 705" in canali
 
             if not hex_:
                 risultato = "❌ Test invalido (controllo interno assente)"
@@ -86,13 +104,13 @@ if kit:
 
         elif kit == "MSTriplex-ABAnalitica":
             canali = [mapping[c] for c in selezionati if c in mapping]
-            bg = "BG" in canali
+            bg = "ROX" in canali
             if not bg:
                 risultato = "❌ Test invalido (controllo interno assente)"
             else:
                 risultato = "\n".join([
-                    f"✅ {target}: positivo" if target in canali else f"❌ {target}: non rilevato"
-                    for target in ["CT", "NG", "MG"]
+                    f"✅ {label}: positivo" if probe in canali else f"❌ {label}: non rilevato"
+                    for probe, label in zip(["FAM", "HEX", "Cy5"], ["Chlamydia trachomatis (CT)", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"])
                 ])
 
         elif kit in ["HBV-geneprof", "HCV-geneprof"]:
