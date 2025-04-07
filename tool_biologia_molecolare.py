@@ -78,8 +78,8 @@ if kit == "BV-NLM":
     ct_green = st.number_input("CT Gardnerella (GREEN)", min_value=0.0)
 
     if st.button("Interpreta risultato"):
-        presenza_gardnerella = ct_green < 35
-        presenza_atopobium = ct_yellow < 35
+        presenza_gardnerella = ct_green < 35 and ct_green != 0.00
+        presenza_atopobium = ct_yellow < 35 and ct_yellow != 0.00
 
         presenza_text = []
         if presenza_gardnerella:
