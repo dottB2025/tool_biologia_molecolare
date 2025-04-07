@@ -17,8 +17,8 @@ else:
 # Campo per il codice paziente
 codice_paziente = st.text_input("Inserisci il codice del paziente:")
 
-# Se il codice è già presente, mostra i dati
-if codice_paziente:
+# Pulsante per cercare nello storico
+if codice_paziente and st.button("Cerca nello storico"):
     if codice_paziente in db["codice_paziente"].values:
         st.subheader("🗂️ Elaborazione precedente trovata")
         match = db[db["codice_paziente"] == codice_paziente].iloc[-1]
@@ -27,6 +27,8 @@ if codice_paziente:
         st.write(f"**Risultato:** {match['risultato']}")
         if pd.notna(match['concentrazione']):
             st.write(f"**Concentrazione:** {int(match['concentrazione']):,} UI/ml".replace(",", "."))
+    else:
+        st.info("Nessun risultato trovato per questo codice.")
 
 # Selezione del kit diagnostico
 kit = st.radio("Seleziona il kit diagnostico:", ["HPV-geneprof", "MSTriplex-ABAnalitica", "HBV-geneprof", "HCV-geneprof"], index=None)
