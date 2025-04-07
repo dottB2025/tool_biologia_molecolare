@@ -1,9 +1,9 @@
 import streamlit as st
 
-st.title("Interpretazione risultati PCR - HPV / MST / HBV")
+st.title("Interpretazione risultati PCR - HPV / MST / HBV / HCV")
 
 # Selezione del kit diagnostico
-kit = st.radio("Seleziona il kit diagnostico:", ["HPV-geneprof", "MSTriplex-ABAnalitica", "HBV-geneprof"], index=None)
+kit = st.radio("Seleziona il kit diagnostico:", ["HPV-geneprof", "MSTriplex-ABAnalitica", "HBV-geneprof", "HCV-geneprof"], index=None)
 
 # Dizionari di transcodifica dei canali per ciascun kit
 color_to_channel_hpv = {
@@ -26,6 +26,11 @@ color_to_channel_hbv = {
     "YELLOW": "HEX"
 }
 
+color_to_channel_hcv = {
+    "GREEN": "FAM",
+    "YELLOW": "HEX"
+}
+
 # Associazione kit → dizionario colori e lista colori validi
 kit_color_map = {
     "HPV-geneprof": {
@@ -39,14 +44,18 @@ kit_color_map = {
     "HBV-geneprof": {
         "mapping": color_to_channel_hbv,
         "colori": list(color_to_channel_hbv.keys())
+    },
+    "HCV-geneprof": {
+        "mapping": color_to_channel_hcv,
+        "colori": list(color_to_channel_hcv.keys())
     }
 }
 
 # Stati per la sessione
-if "show_hbv_quant" not in st.session_state:
-    st.session_state.show_hbv_quant = False
-if "hbv_result" not in st.session_state:
-    st.session_state.hbv_result = ""
+if "show_quant" not in st.session_state:
+    st.session_state.show_quant = False
+if "result_text" not in st.session_state:
+    st.session_state.result_text = ""
 
 if kit:
     colori_validi = kit_color_map[kit]["colori"]
@@ -56,7 +65,7 @@ if kit:
 
     if st.button("Interpreta risultato"):
         risultato = ""
-        st.session_state.show_hbv_quant = False
+        st.session_state.show_quant = False
 
         if kit == "HPV-geneprof":
             canali = [mapping[c] for c in selezionati]
@@ -90,8 +99,6 @@ if kit:
                 risultato = "✅ Test valido - HPV non rilevato"
             else:
                 risultato = "⚠️ Caso non previsto - controlla i canali inseriti"
-            st.markdown("### Risultato")
-            st.info(risultato)
 
         elif kit == "MSTriplex-ABAnalitica":
             canali = [mapping[c] for c in selezionati if c in mapping]
@@ -117,27 +124,27 @@ if kit:
                     esiti.append("❌ Mycoplasma genitalium (MG): non rilevato")
 
                 risultato = "\n".join(esiti)
-            st.markdown("### Risultato")
-            st.info(risultato)
 
-        elif kit == "HBV-geneprof":
+        elif kit in ["HBV-geneprof", "HCV-geneprof"]:
             canali = [mapping[c] for c in selezionati if c in mapping]
             fam = "FAM" in canali
             hex_ = "HEX" in canali
 
             if not fam and not hex_:
-                st.session_state.hbv_result = "❌ Test invalido (controllo interno assente)"
-            elif fam and hex_:
-                st.session_state.hbv_result = "✅ Test valido - HBV positivo"
-                st.session_state.show_hbv_quant = True
+                risultato = "❌ Test invalido (controllo interno assente)"
+            elif fam:
+                risultato = f"✅ Test valido - {kit[:3]} positivo"
+                st.session_state.show_quant = True
             elif not fam and hex_:
-                st.session_state.hbv_result = "✅ Test valido - HBV non rilevato"
+                risultato = f"✅ Test valido - {kit[:3]} non rilevato"
             else:
-                st.session_state.hbv_result = "⚠️ Caso non previsto - controlla i canali inseriti"
-            st.markdown("### Risultato")
-            st.info(st.session_state.hbv_result)
+                risultato = "⚠️ Caso non previsto - controlla i canali inseriti"
 
-if st.session_state.show_hbv_quant:
+        st.session_state.result_text = risultato
+        st.markdown("### Risultato")
+        st.info(risultato)
+
+if st.session_state.show_quant:
     st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
     with st.form("quantificazione"):
         sc = st.number_input("SC (concentrazione del campione in UI/µl)", min_value=0.0, format="%.2f")
@@ -148,6 +155,6 @@ if st.session_state.show_hbv_quant:
         if calcola:
             if sc > 0 and ev > 0 and iv > 0:
                 concentrazione = round((sc * ev) / iv)
-                st.success(f"Concentrazione campione: {concentrazione:,} UI/ml".replace(",", "."))
+                st.success(f"Concentrazione campione: {concentrazione:,.0f} UI/ml".replace(",", "."))
             else:
                 st.warning("Inserire tutti i valori per calcolare la concentrazione.")
