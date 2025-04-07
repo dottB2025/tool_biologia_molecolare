@@ -4,7 +4,13 @@ st.set_page_config(page_title="dr. Buonsanti - Tool Biologia Molecolare")
 st.title("dr. Buonsanti - tool interpretativo test biologia molecolare")
 
 # Selezione del kit diagnostico
-kit = st.radio("Seleziona il kit diagnostico:", ["HPV-geneprof", "MSTriplex-ABAnalitica", "HBV-geneprof", "HCV-geneprof"], index=None)
+kit = st.radio("Seleziona il kit diagnostico:", [
+    "HPV-geneprof",
+    "MSTriplex-ABAnalitica",
+    "HBV-geneprof",
+    "HCV-geneprof",
+    "MTHFR-C677T-Geneprof"
+], index=None)
 
 # Dizionari di transcodifica dei canali per ciascun kit
 color_to_channel_hpv = {
@@ -22,13 +28,15 @@ color_to_channel_mst = {
 }
 color_to_channel_hbv = {"GREEN": "FAM", "YELLOW": "HEX"}
 color_to_channel_hcv = {"GREEN": "FAM", "YELLOW": "HEX"}
+color_to_channel_mthfr = {"GREEN": "FAM", "YELLOW": "HEX"}
 
 # Associazione kit → dizionario colori e lista colori validi
 kit_color_map = {
     "HPV-geneprof": {"mapping": color_to_channel_hpv, "colori": list(color_to_channel_hpv.keys())},
     "MSTriplex-ABAnalitica": {"mapping": color_to_channel_mst, "colori": list(color_to_channel_mst.keys())},
     "HBV-geneprof": {"mapping": color_to_channel_hbv, "colori": list(color_to_channel_hbv.keys())},
-    "HCV-geneprof": {"mapping": color_to_channel_hcv, "colori": list(color_to_channel_hcv.keys())}
+    "HCV-geneprof": {"mapping": color_to_channel_hcv, "colori": list(color_to_channel_hcv.keys())},
+    "MTHFR-C677T-Geneprof": {"mapping": color_to_channel_mthfr, "colori": list(color_to_channel_mthfr.keys())}
 }
 
 # Stati per la sessione
@@ -98,6 +106,18 @@ if kit:
                 st.session_state.show_quant = True
             else:
                 risultato = f"✅ Test valido - {kit[:3]} non rilevato"
+
+        elif kit == "MTHFR-C677T-Geneprof":
+            canali = [mapping[c] for c in selezionati if c in mapping]
+            fam, hex_ = "FAM" in canali, "HEX" in canali
+            if fam and not hex_:
+                risultato = "✅ Mutazione C677T assente (omozigote wild type - C/C)"
+            elif not fam and hex_:
+                risultato = "✅ Mutazione C677T presente in omozigosi (T/T)"
+            elif fam and hex_:
+                risultato = "✅ Mutazione C677T presente in eterozigosi (C/T)"
+            else:
+                risultato = "❌ Test invalido (nessun segnale rilevato)"
 
         st.session_state.result_text = risultato
         st.markdown("### Risultato")
