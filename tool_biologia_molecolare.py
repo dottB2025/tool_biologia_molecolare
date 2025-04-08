@@ -159,17 +159,21 @@ elif kit in kit_color_map:
                 risultato = "✅ Positivo per HPV 16, 18 e 45"
             else:
                 risultato = "⚠️ Caso non previsto"
-        elif kit == "MSTriplex-ABAnalitica":
+        elif kit == \"MSTriplex-ABAnalitica\":
             canali = [mapping[c] for c in selezionati if c in mapping]
-            bg = "ROX" in canali
+            bg = \"ROX\" in canali
             if not bg:
-                risultato = "❌ Test invalido (controllo interno assente)"
+                risultato = \"❌ Test invalido (controllo interno assente)\"
             else:
-                risultato = "\n".join([
+                risultato = "
+" + "
+".join([
                     f"❌ {label}: rilevato" if probe in canali else f"✅ {label}: non rilevato"
                     for probe, label in zip(
                         ["FAM", "HEX", "Cy5"],
                         ["Chlamydia trachomatis (CT)", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"]
+                    )
+                ])", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"]
                     )
                 ])
         elif kit in ["HBV-geneprof", "HCV-geneprof"]:
