@@ -139,7 +139,14 @@ elif kit in kit_color_map:
         elif kit in ["HBV-geneprof", "HCV-geneprof"]:
             fam, hex_ = "FAM" in canali, "HEX" in canali
             if not fam and not hex_:
+                st.session_state.show_quant = False
                 risultato = "❌ Test invalido (controllo interno assente)"
+            elif fam:
+                st.session_state.show_quant = True
+                risultato = f"✅ Test valido - {kit[:3]} positivo"
+            else:
+                st.session_state.show_quant = False
+                risultato = f"✅ Test valido - {kit[:3]} non rilevato""❌ Test invalido (controllo interno assente)"
                 st.session_state.show_quant = False
             elif fam:
                 risultato = f"✅ Test valido - {kit[:3]} positivo"
