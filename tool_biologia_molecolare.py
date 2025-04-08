@@ -140,6 +140,13 @@ elif kit in kit_color_map:
             fam, hex_ = "FAM" in canali, "HEX" in canali
             if not fam and not hex_:
                 risultato = "❌ Test invalido (controllo interno assente)"
+                st.session_state.show_quant = False
+            elif fam:
+                risultato = f"✅ Test valido - {kit[:3]} positivo"
+                st.session_state.show_quant = True
+            else:
+                risultato = f"✅ Test valido - {kit[:3]} non rilevato"
+                st.session_state.show_quant = False"❌ Test invalido (controllo interno assente)"
             elif fam:
                 risultato = f"✅ Test valido - {kit[:3]} positivo"
                 st.session_state.show_quant = True
