@@ -4,7 +4,6 @@ import math
 st.set_page_config(page_title="dr. Buonsanti - Tool Biologia Molecolare")
 st.title("dr. Buonsanti - tool interpretativo test biologia molecolare")
 
-# Selezione del kit diagnostico
 kit = st.radio("Seleziona il kit diagnostico:", [
     "HPV-geneprof",
     "MSTriplex-ABAnalitica",
@@ -15,52 +14,15 @@ kit = st.radio("Seleziona il kit diagnostico:", [
     "BV-NLM"
 ], index=None)
 
-# Mapping esplicito per ciascun kit (colori → sonde)
 kit_color_map = {
-    "HPV-geneprof": {
-        "mapping": {
-            "GREEN": "FAM",
-            "YELLOW": "HEX",
-            "ORANGE": "ROX",
-            "RED": "Cy5",
-            "CRIMSON": "Quasar 705"
-        }
-    },
-    "MSTriplex-ABAnalitica": {
-        "mapping": {
-            "GREEN": "FAM",
-            "YELLOW": "HEX",
-            "RED": "Cy5",
-            "ORANGE": "ROX"
-        }
-    },
-    "HBV-geneprof": {
-        "mapping": {
-            "GREEN": "FAM",
-            "YELLOW": "HEX"
-        }
-    },
-    "HCV-geneprof": {
-        "mapping": {
-            "GREEN": "FAM",
-            "YELLOW": "HEX"
-        }
-    },
-    "MTHFR-C677T": {
-        "mapping": {
-            "GREEN": "FAM",
-            "YELLOW": "HEX"
-        }
-    },
-    "MTHFR-A1298C": {
-        "mapping": {
-            "GREEN": "FAM",
-            "YELLOW": "HEX"
-        }
-    }
+    "HPV-geneprof": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX", "ORANGE": "ROX", "RED": "Cy5", "CRIMSON": "Quasar 705"}},
+    "MSTriplex-ABAnalitica": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX", "RED": "Cy5", "ORANGE": "ROX"}},
+    "HBV-geneprof": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX"}},
+    "HCV-geneprof": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX"}},
+    "MTHFR-C677T": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX"}},
+    "MTHFR-A1298C": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX"}}
 }
 
-# Aggiungi lista dei colori per ciascun kit
 for k in kit_color_map:
     kit_color_map[k]["colori"] = list(kit_color_map[k]["mapping"].keys())
 
@@ -133,8 +95,9 @@ elif kit in kit_color_map:
 
     if st.button("Interpreta risultato"):
         risultato = ""
+        canali = [mapping[c] for c in selezionati if c in mapping]
+
         if kit == "HPV-geneprof":
-            canali = [mapping[c] for c in selezionati]
             fam, hex_ = "FAM" in canali, "HEX" in canali
             cy5, texred, quasar = "Cy5" in canali, "ROX" in canali, "Quasar 705" in canali
             if not hex_:
@@ -159,25 +122,21 @@ elif kit in kit_color_map:
                 risultato = "✅ Positivo per HPV 16, 18 e 45"
             else:
                 risultato = "⚠️ Caso non previsto"
-        elif kit == \"MSTriplex-ABAnalitica\":
-            canali = [mapping[c] for c in selezionati if c in mapping]
-            bg = \"ROX\" in canali
+
+        elif kit == "MSTriplex-ABAnalitica":
+            bg = "ROX" in canali
             if not bg:
-                risultato = \"❌ Test invalido (controllo interno assente)\"
+                risultato = "❌ Test invalido (controllo interno assente)"
             else:
-                risultato = "
-" + "
-".join([
+                risultato = "\n" + "\n".join([
                     f"❌ {label}: rilevato" if probe in canali else f"✅ {label}: non rilevato"
                     for probe, label in zip(
                         ["FAM", "HEX", "Cy5"],
                         ["Chlamydia trachomatis (CT)", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"]
                     )
-                ])", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"]
-                    )
                 ])
+
         elif kit in ["HBV-geneprof", "HCV-geneprof"]:
-            canali = [mapping[c] for c in selezionati if c in mapping]
             fam, hex_ = "FAM" in canali, "HEX" in canali
             if not fam and not hex_:
                 risultato = "❌ Test invalido (controllo interno assente)"
@@ -186,8 +145,8 @@ elif kit in kit_color_map:
                 st.session_state.show_quant = True
             else:
                 risultato = f"✅ Test valido - {kit[:3]} non rilevato"
+
         elif kit in ["MTHFR-C677T", "MTHFR-A1298C"]:
-            canali = [mapping[c] for c in selezionati if c in mapping]
             fam = "FAM" in canali
             hex_ = "HEX" in canali
             if fam and not hex_:
@@ -198,6 +157,7 @@ elif kit in kit_color_map:
                 risultato = "🟥 Omozigote mutato (T/T)"
             else:
                 risultato = "❌ Test invalido (nessun segnale rilevato)"
+
         st.markdown("### Risultato")
         st.markdown(risultato)
 
