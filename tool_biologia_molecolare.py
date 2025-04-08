@@ -159,7 +159,8 @@ elif kit in kit_color_map:
                 risultato = "❌ Test invalido (nessun segnale rilevato)"
 
         st.markdown("### Risultato")
-        st.markdown(risultato)
+        st.markdown(risultato.replace("
+", "<br>"), unsafe_allow_html=True)
 
     if st.session_state.get("show_quant"):
         st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
