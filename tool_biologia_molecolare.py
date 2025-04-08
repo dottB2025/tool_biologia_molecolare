@@ -87,7 +87,6 @@ if kit == "BV-NLM":
         if presenza_atopobium:
             presenza_text.append("✅ Presenza di Atopobium")
 
-        # Sostituisci 0.00 con 1 per evitare errore log
         atopobium = 1 if atopobium == 0 else atopobium
         gardnerella = 1 if gardnerella == 0 else gardnerella
 
@@ -167,8 +166,11 @@ elif kit in kit_color_map:
                 risultato = "❌ Test invalido (controllo interno assente)"
             else:
                 risultato = "\n".join([
-                    f"✅ {label}: positivo" if probe in canali else f"❌ {label}: non rilevato"
-                    for probe, label in zip(["FAM", "HEX", "Cy5"], ["Chlamydia trachomatis (CT)", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"])
+                    f"❌ {label}: rilevato" if probe in canali else f"✅ {label}: non rilevato"
+                    for probe, label in zip(
+                        ["FAM", "HEX", "Cy5"],
+                        ["Chlamydia trachomatis (CT)", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"]
+                    )
                 ])
         elif kit in ["HBV-geneprof", "HCV-geneprof"]:
             canali = [mapping[c] for c in selezionati if c in mapping]
