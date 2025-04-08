@@ -159,16 +159,4 @@ elif kit in kit_color_map:
                 risultato = "❌ Test invalido (nessun segnale rilevato)"
 
         st.markdown("### Risultato")
-        st.markdown(risultato.replace("
-", "<br>"), unsafe_allow_html=True)
-
-    if st.session_state.get("show_quant"):
-        st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
-        with st.form("quantificazione"):
-            sc = st.number_input("SC (concentrazione del campione in UI/µl)", min_value=0.0, format="%.2f")
-            ev = st.number_input("EV (volume di eluizione in µl)", min_value=0.0, format="%.2f")
-            iv = st.number_input("IV (volume di isolamento in ml)", min_value=0.0, format="%.2f")
-            calcola = st.form_submit_button("Calcola concentrazione")
-            if calcola and sc > 0 and ev > 0 and iv > 0:
-                concentrazione = round((sc * ev) / iv)
-                st.success(f"Concentrazione campione: {concentrazione:,.0f} UI/ml".replace(",", "."))
+        st.markdown(risultato.replace('\n', '<br>'), unsafe_allow_html=True)
