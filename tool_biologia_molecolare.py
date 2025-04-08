@@ -4,6 +4,7 @@ import math
 st.set_page_config(page_title="dr. Buonsanti - Tool Biologia Molecolare")
 st.title("dr. Buonsanti - tool interpretativo test biologia molecolare")
 
+# Selezione del kit diagnostico
 kit = st.radio("Seleziona il kit diagnostico:", [
     "HPV-geneprof",
     "MSTriplex-ABAnalitica",
@@ -14,15 +15,52 @@ kit = st.radio("Seleziona il kit diagnostico:", [
     "BV-NLM"
 ], index=None)
 
+# Mapping esplicito per ciascun kit (colori → sonde)
 kit_color_map = {
-    "HPV-geneprof": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX", "ORANGE": "ROX", "RED": "Cy5", "CRIMSON": "Quasar 705"}},
-    "MSTriplex-ABAnalitica": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX", "RED": "Cy5", "ORANGE": "ROX"}},
-    "HBV-geneprof": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX"}},
-    "HCV-geneprof": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX"}},
-    "MTHFR-C677T": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX"}},
-    "MTHFR-A1298C": {"mapping": {"GREEN": "FAM", "YELLOW": "HEX"}}
+    "HPV-geneprof": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX",
+            "ORANGE": "ROX",
+            "RED": "Cy5",
+            "CRIMSON": "Quasar 705"
+        }
+    },
+    "MSTriplex-ABAnalitica": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX",
+            "RED": "Cy5",
+            "ORANGE": "ROX"
+        }
+    },
+    "HBV-geneprof": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX"
+        }
+    },
+    "HCV-geneprof": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX"
+        }
+    },
+    "MTHFR-C677T": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX"
+        }
+    },
+    "MTHFR-A1298C": {
+        "mapping": {
+            "GREEN": "FAM",
+            "YELLOW": "HEX"
+        }
+    }
 }
 
+# Aggiungi lista dei colori per ciascun kit
 for k in kit_color_map:
     kit_color_map[k]["colori"] = list(kit_color_map[k]["mapping"].keys())
 
@@ -49,6 +87,7 @@ if kit == "BV-NLM":
         if presenza_atopobium:
             presenza_text.append("✅ Presenza di Atopobium")
 
+        # Sostituisci 0.00 con 1 per evitare errore log
         atopobium = 1 if atopobium == 0 else atopobium
         gardnerella = 1 if gardnerella == 0 else gardnerella
 
@@ -95,9 +134,8 @@ elif kit in kit_color_map:
 
     if st.button("Interpreta risultato"):
         risultato = ""
-        canali = [mapping[c] for c in selezionati if c in mapping]
-
         if kit == "HPV-geneprof":
+            canali = [mapping[c] for c in selezionati]
             fam, hex_ = "FAM" in canali, "HEX" in canali
             cy5, texred, quasar = "Cy5" in canali, "ROX" in canali, "Quasar 705" in canali
             if not hex_:
@@ -122,52 +160,28 @@ elif kit in kit_color_map:
                 risultato = "✅ Positivo per HPV 16, 18 e 45"
             else:
                 risultato = "⚠️ Caso non previsto"
-
         elif kit == "MSTriplex-ABAnalitica":
+            canali = [mapping[c] for c in selezionati if c in mapping]
             bg = "ROX" in canali
             if not bg:
                 risultato = "❌ Test invalido (controllo interno assente)"
             else:
-                risultato = "\n" + "\n".join([
-                    f"❌ {label}: rilevato" if probe in canali else f"✅ {label}: non rilevato"
-                    for probe, label in zip(
-                        ["FAM", "HEX", "Cy5"],
-                        ["Chlamydia trachomatis (CT)", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"]
-                    )
+                risultato = "\n".join([
+                    f"✅ {label}: positivo" if probe in canali else f"❌ {label}: non rilevato"
+                    for probe, label in zip(["FAM", "HEX", "Cy5"], ["Chlamydia trachomatis (CT)", "Neisseria gonorrhoeae (NG)", "Mycoplasma genitalium (MG)"])
                 ])
-
         elif kit in ["HBV-geneprof", "HCV-geneprof"]:
-            fam = "FAM" in canali
-            hex_ = "HEX" in canali
-
+            canali = [mapping[c] for c in selezionati if c in mapping]
+            fam, hex_ = "FAM" in canali, "HEX" in canali
             if not fam and not hex_:
-                st.session_state.show_quant = False
                 risultato = "❌ Test invalido (controllo interno assente)"
-
-            elif fam:
-                st.session_state.show_quant = True
-                risultato = f"✅ Test valido - {kit[:3]} positivo"
-
-            else:
-                st.session_state.show_quant = False
-                risultato = f"✅ Test valido - {kit[:3]} non rilevato"f"✅ Test valido - {kit[:3]} positivo"
-            else:
-                st.session_state.show_quant = False
-                risultato = f"✅ Test valido - {kit[:3]} non rilevato""❌ Test invalido (controllo interno assente)"
-                st.session_state.show_quant = False
             elif fam:
                 risultato = f"✅ Test valido - {kit[:3]} positivo"
                 st.session_state.show_quant = True
             else:
                 risultato = f"✅ Test valido - {kit[:3]} non rilevato"
-                st.session_state.show_quant = False"❌ Test invalido (controllo interno assente)"
-            elif fam:
-                risultato = f"✅ Test valido - {kit[:3]} positivo"
-                st.session_state.show_quant = True
-            else:
-                risultato = f"✅ Test valido - {kit[:3]} non rilevato"
-
         elif kit in ["MTHFR-C677T", "MTHFR-A1298C"]:
+            canali = [mapping[c] for c in selezionati if c in mapping]
             fam = "FAM" in canali
             hex_ = "HEX" in canali
             if fam and not hex_:
@@ -178,6 +192,16 @@ elif kit in kit_color_map:
                 risultato = "🟥 Omozigote mutato (T/T)"
             else:
                 risultato = "❌ Test invalido (nessun segnale rilevato)"
-
         st.markdown("### Risultato")
-        st.markdown(risultato.replace('\n', '<br>'), unsafe_allow_html=True)
+        st.markdown(risultato)
+
+    if st.session_state.get("show_quant"):
+        st.markdown("### Inserisci i dati per la quantificazione (IU/ml)")
+        with st.form("quantificazione"):
+            sc = st.number_input("SC (concentrazione del campione in UI/µl)", min_value=0.0, format="%.2f")
+            ev = st.number_input("EV (volume di eluizione in µl)", min_value=0.0, format="%.2f")
+            iv = st.number_input("IV (volume di isolamento in ml)", min_value=0.0, format="%.2f")
+            calcola = st.form_submit_button("Calcola concentrazione")
+            if calcola and sc > 0 and ev > 0 and iv > 0:
+                concentrazione = round((sc * ev) / iv)
+                st.success(f"Concentrazione campione: {concentrazione:,.0f} UI/ml".replace(",", "."))
