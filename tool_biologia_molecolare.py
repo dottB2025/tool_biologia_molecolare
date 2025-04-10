@@ -15,6 +15,10 @@ kit = st.radio("Seleziona il kit diagnostico:", [
     "BV-NLM"
 ], index=None)
 
+# Reset della quantificazione se cambio kit
+if "show_quant" in st.session_state and kit not in ["HBV-geneprof", "HCV-geneprof"]:
+    st.session_state.show_quant = False
+
 # Mapping esplicito per ciascun kit (colori → sonde)
 kit_color_map = {
     "HPV-geneprof": {
