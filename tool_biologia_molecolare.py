@@ -1,8 +1,8 @@
 import streamlit as st
 import math
 
-st.set_page_config(page_title="dr. Buonsanti - Tool Biologia Molecolare")
-st.title("dr. Buonsanti - tool interpretativo test biologia molecolare")
+st.set_page_config(page_title="dr. G. Buonsanti - web app per interpretazione di run su Rotorgene 5-plex")
+st.title("dr. G. Buonsanti - web app per interpretazione di run su Rotorgene 5-plex")
 
 # Selezione del kit diagnostico
 kit = st.radio("Seleziona il kit diagnostico:", [
@@ -107,7 +107,7 @@ if kit == "BV-NLM":
                 if kc2 > 1 and kc3 > 2:
                     vaginosi = "⚠️ Alterazioni della flora di eziologia ignota"
                 elif kc1 < 0.5:
-                    vaginosi = "🟥 Presenza di vaginosi batterica"
+                    vaginosi = "🔵 Presenza di vaginosi batterica"
                 elif kc1 > 1:
                     vaginosi = "🟩 Assenza di vaginosi batterica"
                 else:
@@ -143,21 +143,21 @@ elif kit in kit_color_map:
             elif not fam:
                 risultato = "✅ Test valido - HPV non rilevato"
             elif fam and not cy5 and not texred and not quasar:
-                risultato = "✅ Positivo per HPV ad alto rischio (genotipo non determinabile)"
+                risultato = "⚠ Positivo per HPV ad alto rischio (genotipo non determinabile)"
             elif fam and cy5 and not texred and not quasar:
-                risultato = "✅ Positivo per HPV 16"
+                risultato = "⚠ Positivo per HPV 16"
             elif fam and not cy5 and texred and not quasar:
-                risultato = "✅ Positivo per HPV 18"
+                risultato = "⚠ Positivo per HPV 18"
             elif fam and not cy5 and not texred and quasar:
-                risultato = "✅ Positivo per HPV 45"
+                risultato = "⚠ Positivo per HPV 45"
             elif fam and cy5 and texred and not quasar:
-                risultato = "✅ Positivo per HPV 16 e 18"
+                risultato = "⚠ Positivo per HPV 16 e 18"
             elif fam and cy5 and not texred and quasar:
-                risultato = "✅ Positivo per HPV 16 e 45"
+                risultato = "⚠ Positivo per HPV 16 e 45"
             elif fam and not cy5 and texred and quasar:
-                risultato = "✅ Positivo per HPV 18 e 45"
+                risultato = "⚠ Positivo per HPV 18 e 45"
             elif fam and cy5 and texred and quasar:
-                risultato = "✅ Positivo per HPV 16, 18 e 45"
+                risultato = "⚠ Positivo per HPV 16, 18 e 45"
             else:
                 risultato = "⚠️ Caso non previsto"
         elif kit == "MSTriplex-ABAnalitica":
@@ -189,7 +189,7 @@ elif kit in kit_color_map:
             elif fam and hex_:
                 risultato = "🟧 Eterozigote (C/T)"
             elif not fam and hex_:
-                risultato = "🟥 Omozigote mutato (T/T)"
+                risultato = "🔴 Omozigote mutato (T/T)"
             else:
                 risultato = "❌ Test invalido (nessun segnale rilevato)"
         st.markdown("### Risultato")
